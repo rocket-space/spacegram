@@ -1,12 +1,12 @@
 package org.spacegram.translator;
 
 import org.spacegram.SpaceGramConfig;
+import android.text.TextUtils;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LanguageDetector;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.NotificationCenter;
-import org.telegram.messenger.Utilities;
-import org.telegram.ui.Components.TranslateAlert2;
+import org.telegram.tgnet.TLRPC;
 
 /**
  * Helper class to handle translation based on SpaceGramConfig.translateStyle
@@ -80,8 +80,10 @@ public class TranslationHelper {
         SpaceGramTranslator.getInstance().translate(text, fromLang, toLang, (result, rateLimit) -> {
             if (result != null) {
                 // Store translation in message object
-                messageObject.messageOwner.translatedText = result;
-                messageObject.messageOwner.translatedFromLanguage = fromLang;
+                TLRPC.TL_textWithEntities translatedText = new TLRPC.TL_textWithEntities();
+                translatedText.text = result;
+                messageObject.messageOwner.translatedText = translatedText;
+                messageObject.messageOwner.originalLanguage = fromLang;
                 messageObject.messageOwner.translatedToLanguage = toLang;
                 
                 // Mark as translated
@@ -131,7 +133,7 @@ public class TranslationHelper {
                messageObject.messageOwner != null && 
                messageObject.translated &&
                messageObject.messageOwner.translatedText != null &&
-               !messageObject.messageOwner.translatedText.isEmpty();
+               !TextUtils.isEmpty(messageObject.messageOwner.translatedText.text);
     }
 
     /**
@@ -139,7 +141,7 @@ public class TranslationHelper {
      */
     public static String getTranslatedText(MessageObject messageObject) {
         if (isTranslated(messageObject)) {
-            return messageObject.messageOwner.translatedText;
+            return messageObject.messageOwner.translatedText.text;
         }
         return null;
     }
@@ -150,7 +152,7 @@ public class TranslationHelper {
     public static void clearTranslation(MessageObject messageObject, int currentAccount) {
         if (messageObject != null && messageObject.messageOwner != null) {
             messageObject.messageOwner.translatedText = null;
-            messageObject.messageOwner.translatedFromLanguage = null;
+            messageObject.messageOwner.originalLanguage = null;
             messageObject.messageOwner.translatedToLanguage = null;
             messageObject.translated = false;
             
