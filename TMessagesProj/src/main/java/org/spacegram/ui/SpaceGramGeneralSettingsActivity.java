@@ -8,6 +8,7 @@ import android.widget.FrameLayout;
 import org.spacegram.SpaceGramConfig;
 import org.spacegram.translator.SpaceGramTranslator;
 import org.telegram.messenger.LocaleController;
+import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.AlertDialog;
@@ -88,6 +89,8 @@ public class SpaceGramGeneralSettingsActivity extends BaseFragment {
             presentFragment(new LanguageSelectActivity());
         } else if (item.id == 5) {
             SpaceGramConfig.autoTranslate = !SpaceGramConfig.autoTranslate;
+            getMessagesController().getTranslateController().setChatTranslateEnabled(SpaceGramConfig.autoTranslate);
+            NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.updateSearchSettings);
             SpaceGramConfig.saveConfig();
             listView.adapter.update(true);
         }
