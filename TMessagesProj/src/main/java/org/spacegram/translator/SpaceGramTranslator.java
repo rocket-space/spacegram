@@ -33,6 +33,8 @@ public class SpaceGramTranslator {
 
     public static String getProviderName(int provider) {
         switch (provider) {
+            case 0:
+                return "Telegram";
             case PROVIDER_GOOGLE:
                 return "Google Translate";
             case PROVIDER_MYMEMORY:
@@ -46,6 +48,29 @@ public class SpaceGramTranslator {
             default:
                 return "Google Translate";
         }
+    }
+
+
+    public static String[] getAllProviderNamesWithTelegram() {
+        return new String[]{
+            "Telegram",
+            "Google Translate",
+            "MyMemory",
+            "Bing",
+            "Baidu (CN)",
+            "Yandex (RU)"
+        };
+    }
+
+    public static int[] getAllProviderIdsWithTelegram() {
+        return new int[]{
+            0,
+            PROVIDER_GOOGLE,
+            PROVIDER_MYMEMORY,
+            PROVIDER_BING,
+            PROVIDER_BAIDU,
+            PROVIDER_YANDEX
+        };
     }
 
     public static String[] getAllProviderNames() {

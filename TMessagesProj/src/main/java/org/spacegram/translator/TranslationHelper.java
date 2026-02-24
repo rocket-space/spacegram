@@ -9,6 +9,10 @@ import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.tgnet.TLRPC;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 /**
  * Helper class to handle translation based on SpaceGramConfig.translateStyle.
  */
@@ -92,8 +96,9 @@ public class TranslationHelper {
             int currentAccount,
             Runnable onComplete
     ) {
+        final LinkMaskedText linkMaskedText = maskLinks(text, messageObject.messageOwner.entities);
         SpaceGramTranslator.getInstance().translate(
-                text,
+                linkMaskedText.maskedText,
                 fromLang,
                 toLang,
                 (result, rateLimit) -> AndroidUtilities.runOnUIThread(() -> {
@@ -103,9 +108,7 @@ public class TranslationHelper {
                         TLRPC.TL_textWithEntities translatedText =
                                 new TLRPC.TL_textWithEntities();
 
-                        translatedText.text = result;
-                        translatedText.entities =
-                                messageObject.messageOwner.entities;
+                        translatedText.text = restorePlaceholders(result, linkMaskedText.placeholders, translatedText.entities = new ArrayList<>());
 
                         messageObject.messageOwner.translatedText =
                                 translatedText;
@@ -128,6 +131,107 @@ public class TranslationHelper {
                     }
                 })
         );
+    }
+
+    private static class LinkPlaceholder {
+        final String token;
+        final String visibleText;
+        final String url;
+        final boolean textUrl;
+
+        LinkPlaceholder(String token, String visibleText, String url, boolean textUrl) {
+            this.token = token;
+            this.visibleText = visibleText;
+            this.url = url;
+            this.textUrl = textUrl;
+        }
+    }
+
+    private static class LinkMaskedText {
+        final String maskedText;
+        final ArrayList<LinkPlaceholder> placeholders;
+
+        LinkMaskedText(String maskedText, ArrayList<LinkPlaceholder> placeholders) {
+            this.maskedText = maskedText;
+            this.placeholders = placeholders;
+        }
+    }
+
+    private static LinkMaskedText maskLinks(String text, ArrayList<TLRPC.MessageEntity> entities) {
+        if (TextUtils.isEmpty(text) || entities == null || entities.isEmpty()) {
+            return new LinkMaskedText(text, new ArrayList<>());
+        }
+
+        ArrayList<TLRPC.MessageEntity> linkEntities = new ArrayList<>();
+        for (int i = 0; i < entities.size(); i++) {
+            TLRPC.MessageEntity entity = entities.get(i);
+            if (entity == null) {
+                continue;
+            }
+            if (entity instanceof TLRPC.TL_messageEntityTextUrl || entity instanceof TLRPC.TL_messageEntityUrl) {
+                linkEntities.add(entity);
+            }
+        }
+        if (linkEntities.isEmpty()) {
+            return new LinkMaskedText(text, new ArrayList<>());
+        }
+
+        Collections.sort(linkEntities, Comparator.comparingInt(e -> e.offset));
+        StringBuilder builder = new StringBuilder();
+        ArrayList<LinkPlaceholder> placeholders = new ArrayList<>();
+        int cursor = 0;
+        int tokenIndex = 0;
+        for (int i = 0; i < linkEntities.size(); i++) {
+            TLRPC.MessageEntity entity = linkEntities.get(i);
+            int start = Math.max(0, entity.offset);
+            int end = Math.min(text.length(), entity.offset + entity.length);
+            if (start < cursor || end <= start) {
+                continue;
+            }
+            builder.append(text, cursor, start);
+            String token = "__SG_LINK_" + tokenIndex++ + "__";
+            String visibleText = text.substring(start, end);
+            String url = entity instanceof TLRPC.TL_messageEntityTextUrl ? entity.url : visibleText;
+            placeholders.add(new LinkPlaceholder(token, visibleText, url, entity instanceof TLRPC.TL_messageEntityTextUrl));
+            builder.append(token);
+            cursor = end;
+        }
+        builder.append(text, cursor, text.length());
+        return new LinkMaskedText(builder.toString(), placeholders);
+    }
+
+    private static String restorePlaceholders(String translatedText, ArrayList<LinkPlaceholder> placeholders, ArrayList<TLRPC.MessageEntity> outputEntities) {
+        if (TextUtils.isEmpty(translatedText) || placeholders == null || placeholders.isEmpty()) {
+            return translatedText;
+        }
+
+        String restored = translatedText;
+        for (int i = 0; i < placeholders.size(); i++) {
+            LinkPlaceholder placeholder = placeholders.get(i);
+            int start = restored.indexOf(placeholder.token);
+            if (start < 0) {
+                continue;
+            }
+            String replacement = placeholder.visibleText;
+            restored = restored.substring(0, start) + replacement + restored.substring(start + placeholder.token.length());
+
+            if (!TextUtils.isEmpty(placeholder.url) && outputEntities != null) {
+                if (placeholder.textUrl) {
+                    TLRPC.TL_messageEntityTextUrl entity = new TLRPC.TL_messageEntityTextUrl();
+                    entity.offset = start;
+                    entity.length = replacement.length();
+                    entity.url = placeholder.url;
+                    outputEntities.add(entity);
+                } else {
+                    TLRPC.TL_messageEntityUrl entity = new TLRPC.TL_messageEntityUrl();
+                    entity.offset = start;
+                    entity.length = replacement.length();
+                    outputEntities.add(entity);
+                }
+            }
+        }
+
+        return restored;
     }
 
     /**

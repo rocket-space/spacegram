@@ -353,7 +353,7 @@ public class TranslateButton extends FrameLayout {
 
         ActionBarMenuSubItem providerButton = new ActionBarMenuSubItem(getContext(), true, false, resourcesProvider);
         providerButton.setTextAndIcon(getString(R.string.SettingsSpaceGramTranslatorProvider), R.drawable.msg_customize);
-        providerButton.setSubtext(SpaceGramConfig.translateProvider == 0 ? "Telegram" : SpaceGramTranslator.getProviderName(SpaceGramConfig.translateProvider));
+        providerButton.setSubtext(SpaceGramTranslator.getProviderName(SpaceGramConfig.translateProvider));
         providerButton.setItemHeight(56);
         popupLayout.addView(providerButton);
 
@@ -365,17 +365,6 @@ public class TranslateButton extends FrameLayout {
         providerBackButton.setTextAndIcon(getString(R.string.Back), R.drawable.ic_ab_back);
         providerBackButton.setOnClickListener(e -> popupLayout.getSwipeBack().closeForeground());
         providerSwipeBack.addView(providerBackButton);
-
-        ActionBarMenuSubItem telegramProvider = new ActionBarMenuSubItem(getContext(), 2, false, false, resourcesProvider);
-        telegramProvider.setText("Telegram");
-        telegramProvider.setChecked(SpaceGramConfig.translateProvider == 0);
-        telegramProvider.setOnClickListener(e -> {
-            SpaceGramConfig.translateProvider = 0;
-            SpaceGramConfig.saveConfig();
-            popupWindow.dismiss();
-            updateText();
-        });
-        providerSwipeBack.addView(telegramProvider);
 
         int[] providerIds = SpaceGramTranslator.getAllProviderIds();
         String[] providerNames = SpaceGramTranslator.getAllProviderNames();
