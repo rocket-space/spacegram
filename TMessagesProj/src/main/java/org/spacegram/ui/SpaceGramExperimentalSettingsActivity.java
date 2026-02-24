@@ -83,15 +83,19 @@ public class SpaceGramExperimentalSettingsActivity extends BaseFragment {
             isDownload ? R.string.SettingsSpaceGramDownloadSpeed : R.string.SettingsSpaceGramUploadSpeed
         );
 
-        final CharSequence[] modeLabels = new CharSequence[] {
+        final String[] baseModeLabels = new String[] {
             LocaleController.getString("SettingsSpaceGramSpeedModeNormal", R.string.SettingsSpaceGramSpeedModeNormal),
             LocaleController.getString("SettingsSpaceGramSpeedModeFast", R.string.SettingsSpaceGramSpeedModeFast),
             LocaleController.getString("SettingsSpaceGramSpeedModeExtreme", R.string.SettingsSpaceGramSpeedModeExtreme)
         };
+        final CharSequence[] modeLabels = new CharSequence[baseModeLabels.length];
+        for (int i = 0; i < baseModeLabels.length; i++) {
+            modeLabels[i] = (i == currentMode ? "✓ " : "") + baseModeLabels[i];
+        }
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
         builder.setTitle(title);
-        builder.setSingleChoiceItems(modeLabels, currentMode, new DialogInterface.OnClickListener() {
+        builder.setItems(modeLabels, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (isDownload) {
