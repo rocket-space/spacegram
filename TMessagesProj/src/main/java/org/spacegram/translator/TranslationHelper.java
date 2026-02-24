@@ -3,7 +3,6 @@ package org.spacegram.translator;
 import android.text.TextUtils;
 
 import org.spacegram.SpaceGramConfig;
-import android.text.TextUtils;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LanguageDetector;
 import org.telegram.messenger.MessageObject;
@@ -73,7 +72,6 @@ public class TranslationHelper {
         Runnable onComplete
     ) {
         SpaceGramTranslator.getInstance().translate(text, fromLang, toLang, (result, rateLimit) -> {
-<<<<<<< HEAD
             AndroidUtilities.runOnUIThread(() -> {
                 if (result != null && messageObject.messageOwner != null) {
                     TLRPC.TL_textWithEntities translatedText = new TLRPC.TL_textWithEntities();
@@ -85,21 +83,6 @@ public class TranslationHelper {
                     messageObject.messageOwner.translatedToLanguage = toLang;
                     messageObject.translated = true;
 
-=======
-            if (result != null) {
-                // Store translation in message object
-                TLRPC.TL_textWithEntities translatedText = new TLRPC.TL_textWithEntities();
-                translatedText.text = result;
-                messageObject.messageOwner.translatedText = translatedText;
-                messageObject.messageOwner.originalLanguage = fromLang;
-                messageObject.messageOwner.translatedToLanguage = toLang;
-                
-                // Mark as translated
-                messageObject.translated = true;
-                
-                // Notify UI to update
-                AndroidUtilities.runOnUIThread(() -> {
->>>>>>> master
                     NotificationCenter.getInstance(currentAccount)
                         .postNotificationName(NotificationCenter.messageTranslated,
                             messageObject.getDialogId(),
@@ -117,19 +100,11 @@ public class TranslationHelper {
      * Check if a message is currently translated.
      */
     public static boolean isTranslated(MessageObject messageObject) {
-<<<<<<< HEAD
         return messageObject != null
             && messageObject.messageOwner != null
             && messageObject.translated
             && messageObject.messageOwner.translatedText != null
             && !TextUtils.isEmpty(messageObject.messageOwner.translatedText.text);
-=======
-        return messageObject != null && 
-               messageObject.messageOwner != null && 
-               messageObject.translated &&
-               messageObject.messageOwner.translatedText != null &&
-               !TextUtils.isEmpty(messageObject.messageOwner.translatedText.text);
->>>>>>> master
     }
 
     /**
