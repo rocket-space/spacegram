@@ -10,11 +10,10 @@ public class SpaceGramTranslator {
 
     // Provider constants
     public static final int PROVIDER_GOOGLE = 1;
-    public static final int PROVIDER_DEEPL = 2;
-    public static final int PROVIDER_YANDEX = 3;
-    public static final int PROVIDER_MICROSOFT = 4;
-    public static final int PROVIDER_LIBRETRANSLATE = 5;
-    public static final int PROVIDER_MYMEMORY = 6;
+    public static final int PROVIDER_MYMEMORY = 2;
+    public static final int PROVIDER_BING = 3;
+    public static final int PROVIDER_BAIDU = 4;
+    public static final int PROVIDER_YANDEX = 5;
 
     private static final SpaceGramTranslator INSTANCE = new SpaceGramTranslator();
     private final LruCache<String, String> cache = new LruCache<>(200);
@@ -22,11 +21,10 @@ public class SpaceGramTranslator {
 
     private SpaceGramTranslator() {
         providers.put(PROVIDER_GOOGLE, new GoogleTranslator());
-        providers.put(PROVIDER_DEEPL, new DeepLTranslator());
-        providers.put(PROVIDER_YANDEX, new YandexTranslator());
-        providers.put(PROVIDER_MICROSOFT, new MicrosoftTranslator());
-        providers.put(PROVIDER_LIBRETRANSLATE, new LibreTranslateTranslator());
         providers.put(PROVIDER_MYMEMORY, new MyMemoryTranslator());
+        providers.put(PROVIDER_BING, new SimplyTranslateTranslator("bing"));
+        providers.put(PROVIDER_BAIDU, new SimplyTranslateTranslator("baidu"));
+        providers.put(PROVIDER_YANDEX, new SimplyTranslateTranslator("yandex"));
     }
 
     public static SpaceGramTranslator getInstance() {
@@ -37,16 +35,14 @@ public class SpaceGramTranslator {
         switch (provider) {
             case PROVIDER_GOOGLE:
                 return "Google Translate";
-            case PROVIDER_DEEPL:
-                return "DeepL";
-            case PROVIDER_YANDEX:
-                return "Yandex";
-            case PROVIDER_MICROSOFT:
-                return "Microsoft Translator";
-            case PROVIDER_LIBRETRANSLATE:
-                return "LibreTranslate";
             case PROVIDER_MYMEMORY:
                 return "MyMemory";
+            case PROVIDER_BING:
+                return "Bing";
+            case PROVIDER_BAIDU:
+                return "Baidu (CN)";
+            case PROVIDER_YANDEX:
+                return "Yandex (RU)";
             default:
                 return "Google Translate";
         }
@@ -55,22 +51,20 @@ public class SpaceGramTranslator {
     public static String[] getAllProviderNames() {
         return new String[]{
             "Google Translate",
-            "DeepL",
-            "Yandex",
-            "Microsoft Translator",
-            "LibreTranslate",
-            "MyMemory"
+            "MyMemory",
+            "Bing",
+            "Baidu (CN)",
+            "Yandex (RU)"
         };
     }
 
     public static int[] getAllProviderIds() {
         return new int[]{
             PROVIDER_GOOGLE,
-            PROVIDER_DEEPL,
-            PROVIDER_YANDEX,
-            PROVIDER_MICROSOFT,
-            PROVIDER_LIBRETRANSLATE,
-            PROVIDER_MYMEMORY
+            PROVIDER_MYMEMORY,
+            PROVIDER_BING,
+            PROVIDER_BAIDU,
+            PROVIDER_YANDEX
         };
     }
 

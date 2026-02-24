@@ -54,6 +54,7 @@ import org.telegram.ui.Stories.recorder.ButtonWithCounterView;
 import org.telegram.ui.Stories.recorder.HintView2;
 
 import org.spacegram.SpaceGramConfig;
+import org.spacegram.translator.SpaceGramTranslator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -352,7 +353,7 @@ public class TranslateButton extends FrameLayout {
 
         ActionBarMenuSubItem providerButton = new ActionBarMenuSubItem(getContext(), true, false, resourcesProvider);
         providerButton.setTextAndIcon(getString(R.string.SettingsSpaceGramTranslatorProvider), R.drawable.msg_customize);
-        providerButton.setSubtext(SpaceGramConfig.translateProvider == 0 ? "Telegram" : "Google");
+        providerButton.setSubtext(SpaceGramConfig.translateProvider == 0 ? "Telegram" : SpaceGramTranslator.getProviderName(SpaceGramConfig.translateProvider));
         providerButton.setItemHeight(56);
         popupLayout.addView(providerButton);
 
@@ -376,16 +377,21 @@ public class TranslateButton extends FrameLayout {
         });
         providerSwipeBack.addView(telegramProvider);
 
-        ActionBarMenuSubItem googleProvider = new ActionBarMenuSubItem(getContext(), 2, false, false, resourcesProvider);
-        googleProvider.setText("Google");
-        googleProvider.setChecked(SpaceGramConfig.translateProvider != 0);
-        googleProvider.setOnClickListener(e -> {
-            SpaceGramConfig.translateProvider = 1;
-            SpaceGramConfig.saveConfig();
-            popupWindow.dismiss();
-            updateText();
-        });
-        providerSwipeBack.addView(googleProvider);
+        int[] providerIds = SpaceGramTranslator.getAllProviderIds();
+        String[] providerNames = SpaceGramTranslator.getAllProviderNames();
+        for (int i = 0; i < providerIds.length; i++) {
+            final int providerId = providerIds[i];
+            ActionBarMenuSubItem providerItem = new ActionBarMenuSubItem(getContext(), 2, false, false, resourcesProvider);
+            providerItem.setText(providerNames[i]);
+            providerItem.setChecked(SpaceGramConfig.translateProvider == providerId);
+            providerItem.setOnClickListener(e -> {
+                SpaceGramConfig.translateProvider = providerId;
+                SpaceGramConfig.saveConfig();
+                popupWindow.dismiss();
+                updateText();
+            });
+            providerSwipeBack.addView(providerItem);
+        }
 
         providerButton.setOnClickListener(e -> {
             popupLayout.getSwipeBack().openForeground(providerSwipeBackIndex);
