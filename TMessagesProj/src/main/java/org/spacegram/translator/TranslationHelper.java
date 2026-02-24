@@ -12,6 +12,9 @@ import org.telegram.tgnet.TLRPC;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Helper class to handle translation based on SpaceGramConfig.translateStyle.
@@ -134,12 +137,14 @@ public class TranslationHelper {
     }
 
     private static class LinkPlaceholder {
+        final int id;
         final String token;
         final String visibleText;
         final String url;
         final boolean textUrl;
 
-        LinkPlaceholder(String token, String visibleText, String url, boolean textUrl) {
+        LinkPlaceholder(int id, String token, String visibleText, String url, boolean textUrl) {
+            this.id = id;
             this.token = token;
             this.visibleText = visibleText;
             this.url = url;
@@ -189,10 +194,11 @@ public class TranslationHelper {
                 continue;
             }
             builder.append(text, cursor, start);
-            String token = "__SG_LINK_" + tokenIndex++ + "__";
+            int placeholderId = tokenIndex++;
             String visibleText = text.substring(start, end);
+            String token = "[[ENT_START_" + placeholderId + "]]" + visibleText + "[[ENT_END_" + placeholderId + "]]";
             String url = entity instanceof TLRPC.TL_messageEntityTextUrl ? entity.url : visibleText;
-            placeholders.add(new LinkPlaceholder(token, visibleText, url, entity instanceof TLRPC.TL_messageEntityTextUrl));
+            placeholders.add(new LinkPlaceholder(placeholderId, token, visibleText, url, entity instanceof TLRPC.TL_messageEntityTextUrl));
             builder.append(token);
             cursor = end;
         }
@@ -205,7 +211,12 @@ public class TranslationHelper {
             return translatedText;
         }
 
-        String restored = translatedText;
+        String restored = restoreTaggedEntities(translatedText, placeholders, outputEntities);
+        if (!TextUtils.equals(restored, translatedText)) {
+            return restored;
+        }
+
+        restored = translatedText;
         for (int i = 0; i < placeholders.size(); i++) {
             LinkPlaceholder placeholder = placeholders.get(i);
             int start = restored.indexOf(placeholder.token);
@@ -232,6 +243,66 @@ public class TranslationHelper {
         }
 
         return restored;
+    }
+
+    private static String restoreTaggedEntities(String translatedText, ArrayList<LinkPlaceholder> placeholders, ArrayList<TLRPC.MessageEntity> outputEntities) {
+        HashMap<Integer, LinkPlaceholder> byId = new HashMap<>();
+        for (int i = 0; i < placeholders.size(); i++) {
+            LinkPlaceholder placeholder = placeholders.get(i);
+            byId.put(placeholder.id, placeholder);
+        }
+
+        Pattern pattern = Pattern.compile("\\[\\[ENT_START_(\\d+)\\]\\](.*?)\\[\\[ENT_END_\\1\\]\\]", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(translatedText);
+        StringBuilder plainText = new StringBuilder();
+        int cursor = 0;
+        boolean changed = false;
+
+        while (matcher.find()) {
+            changed = true;
+            if (matcher.start() > cursor) {
+                plainText.append(translatedText, cursor, matcher.start());
+            }
+
+            int start = plainText.length();
+            int placeholderId;
+            try {
+                placeholderId = Integer.parseInt(matcher.group(1));
+            } catch (Exception ignore) {
+                placeholderId = -1;
+            }
+            String translatedVisibleText = matcher.group(2);
+            if (translatedVisibleText == null) {
+                translatedVisibleText = "";
+            }
+            plainText.append(translatedVisibleText);
+
+            LinkPlaceholder placeholder = byId.get(placeholderId);
+            if (placeholder != null && !TextUtils.isEmpty(placeholder.url) && outputEntities != null) {
+                if (placeholder.textUrl) {
+                    TLRPC.TL_messageEntityTextUrl entity = new TLRPC.TL_messageEntityTextUrl();
+                    entity.offset = start;
+                    entity.length = translatedVisibleText.length();
+                    entity.url = placeholder.url;
+                    outputEntities.add(entity);
+                } else {
+                    TLRPC.TL_messageEntityUrl entity = new TLRPC.TL_messageEntityUrl();
+                    entity.offset = start;
+                    entity.length = translatedVisibleText.length();
+                    outputEntities.add(entity);
+                }
+            }
+
+            cursor = matcher.end();
+        }
+
+        if (!changed) {
+            return translatedText;
+        }
+        if (cursor < translatedText.length()) {
+            plainText.append(translatedText, cursor, translatedText.length());
+        }
+        return plainText.toString();
     }
 
     /**
