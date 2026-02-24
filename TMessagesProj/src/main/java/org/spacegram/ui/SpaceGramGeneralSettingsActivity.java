@@ -97,8 +97,8 @@ public class SpaceGramGeneralSettingsActivity extends BaseFragment {
     }
 
     private void showProviderSelector() {
-        final String[] providerNames = SpaceGramTranslator.getAllProviderNames();
-        final int[] providerIds = SpaceGramTranslator.getAllProviderIds();
+        final String[] providerNames = SpaceGramTranslator.getAllProviderNamesWithTelegram();
+        final int[] providerIds = SpaceGramTranslator.getAllProviderIdsWithTelegram();
         
         // Find current provider index
         int currentIndex = -1;
