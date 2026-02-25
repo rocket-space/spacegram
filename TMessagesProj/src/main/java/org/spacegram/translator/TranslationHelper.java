@@ -124,8 +124,9 @@ public class TranslationHelper {
                         NotificationCenter.getInstance(currentAccount)
                                 .postNotificationName(
                                         NotificationCenter.messageTranslated,
-                                        messageObject.getDialogId(),
-                                        messageObject.getId()
+                                        messageObject,
+                                        false,
+                                        false
                                 );
                     }
 
@@ -348,8 +349,9 @@ public class TranslationHelper {
             NotificationCenter.getInstance(currentAccount)
                     .postNotificationName(
                             NotificationCenter.messageTranslated,
-                            messageObject.getDialogId(),
-                            messageObject.getId()
+                            messageObject,
+                            false,
+                            false
                     );
         }
     }
