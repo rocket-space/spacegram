@@ -30,7 +30,6 @@ import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.tgnet.Vector;
 import org.spacegram.SpaceGramConfig;
-import org.spacegram.translator.SpaceGramTranslator;
 import org.telegram.tgnet.tl.TL_stories;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.Components.Bulletin;
@@ -1061,14 +1060,11 @@ public class TranslateController extends BaseController {
                     for (int i = 0; i < pendingTranslation1.messageIds.size(); ++i) {
                         final int id = pendingTranslation1.messageIds.get(i);
                         final Utilities.Callback4<Boolean, Integer, TLRPC.TL_textWithEntities, String> _callback = pendingTranslation1.callbacks.get(i);
-                        final String _text = pendingTranslation1.messageTexts.get(i).text;
                         final TLRPC.TL_textWithEntities sourceEntity = pendingTranslation1.messageTexts.get(i);
-                        
-                        SpaceGramTranslator.getInstance().translate(_text, null, toLanguage, (result, rateLimit) -> {
+
+                        TranslateAlert2.alternativeTranslateWithEntities(sourceEntity, null, toLanguage, (result, rateLimit) -> {
                             if (result != null) {
-                                final TLRPC.TL_textWithEntities resultWithEntities = new TLRPC.TL_textWithEntities();
-                                resultWithEntities.text = result;
-                                _callback.run(isTranscription, id, TranslateAlert2.preprocess(sourceEntity, resultWithEntities), toLanguage);
+                                _callback.run(isTranscription, id, result, toLanguage);
                             } else {
                                 toggleTranslatingDialog(dialogId, false);
                                 NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.showBulletin, Bulletin.TYPE_ERROR, getString(rateLimit ? R.string.TranslationFailedAlert1 : R.string.TranslationFailedAlert2));
@@ -1129,12 +1125,10 @@ public class TranslateController extends BaseController {
                         for (int i = 0; i < ids.size(); ++i) {
                             final int id = ids.get(i);
                             final Utilities.Callback4<Boolean, Integer, TLRPC.TL_textWithEntities, String> _callback = callbacks.get(i);
-                            final String _text = texts.get(i).text;
-                            TranslateAlert2.alternativeTranslate(_text, null, toLanguage, (result, rateLimit) -> {
+                            final TLRPC.TL_textWithEntities sourceEntity = texts.get(i);
+                            TranslateAlert2.alternativeTranslateWithEntities(sourceEntity, null, toLanguage, (result, rateLimit) -> {
                                 if (result != null) {
-                                    final TLRPC.TL_textWithEntities resultWithEntities = new TLRPC.TL_textWithEntities();
-                                    resultWithEntities.text = result;
-                                    _callback.run(isTranscription, id, resultWithEntities, toLanguage);
+                                    _callback.run(isTranscription, id, result, toLanguage);
                                 } else {
                                     toggleTranslatingDialog(dialogId, false);
                                     NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.showBulletin, Bulletin.TYPE_ERROR, getString(rateLimit ? R.string.TranslationFailedAlert1 : R.string.TranslationFailedAlert2));
