@@ -125,7 +125,6 @@ public class ChatEditTypeActivity extends BaseFragment implements NotificationCe
     private LinearLayout saveContainer;
     private HeaderCell saveHeaderCell;
     private TextCheckCell saveRestrictCell;
-    private TextCheckCell saveRestrictAdminBypassCell;
     private TextInfoPrivacyCell saveRestrictInfoCell;
 
     private JoinToSendSettingsView joinContainer;
@@ -137,7 +136,6 @@ public class ChatEditTypeActivity extends BaseFragment implements NotificationCe
     private long chatId;
     private boolean isChannel;
     private boolean isSaveRestricted;
-    private boolean isAdminsSavingRestrictionBypassed;
 
     private boolean canCreatePublic = true;
     private boolean loadingAdminedChannels;
@@ -185,7 +183,6 @@ public class ChatEditTypeActivity extends BaseFragment implements NotificationCe
         isPrivate = !isForcePublic && !ChatObject.isPublic(currentChat);
         isChannel = ChatObject.isChannel(currentChat) && !currentChat.megagroup;
         isSaveRestricted = currentChat.noforwards;
-        isAdminsSavingRestrictionBypassed = getMessagesController().isNoForwardsAdminsBypassEnabled(chatId);
         if (isForcePublic && !ChatObject.isPublic(currentChat) || isPrivate && currentChat.creator) {
             TLRPC.TL_channels_checkUsername req = new TLRPC.TL_channels_checkUsername();
             req.username = "1";
@@ -604,21 +601,8 @@ public class ChatEditTypeActivity extends BaseFragment implements NotificationCe
         saveRestrictCell.setOnClickListener(v -> {
             isSaveRestricted = !isSaveRestricted;
             ((TextCheckCell) v).setChecked(isSaveRestricted);
-            if (saveRestrictAdminBypassCell != null) {
-                saveRestrictAdminBypassCell.setVisibility(currentChat.creator && isSaveRestricted ? View.VISIBLE : View.GONE);
-            }
         });
         saveContainer.addView(saveRestrictCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
-
-        saveRestrictAdminBypassCell = new TextCheckCell(context);
-        saveRestrictAdminBypassCell.setTextAndCheck(LocaleController.getString(R.string.OverrideRestriction), isAdminsSavingRestrictionBypassed, false);
-        saveRestrictAdminBypassCell.setOnClickListener(v -> {
-            isAdminsSavingRestrictionBypassed = !isAdminsSavingRestrictionBypassed;
-            ((TextCheckCell) v).setChecked(isAdminsSavingRestrictionBypassed);
-        });
-        saveRestrictAdminBypassCell.setVisibility(currentChat.creator && isSaveRestricted ? View.VISIBLE : View.GONE);
-        saveContainer.addView(saveRestrictAdminBypassCell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
-
         saveRestrictInfoCell = new TextInfoPrivacyCell(context, 12, resourceProvider);
         if (isChannel && !ChatObject.isMegagroup(currentChat)) {
             saveRestrictInfoCell.setText(LocaleController.getString(R.string.RestrictSavingContentInfoChannel));
@@ -1140,12 +1124,6 @@ public class ChatEditTypeActivity extends BaseFragment implements NotificationCe
     }
 
     private boolean trySetRestrict() {
-        if (!isSaveRestricted) {
-            isAdminsSavingRestrictionBypassed = false;
-        }
-        if (currentChat.creator) {
-            getMessagesController().setNoForwardsAdminsBypassEnabled(chatId, isAdminsSavingRestrictionBypassed);
-        }
         if (currentChat.noforwards != isSaveRestricted) {
             if (!ChatObject.isChannel(currentChat)) {
                 updateDoneProgress(true);
@@ -1153,7 +1131,6 @@ public class ChatEditTypeActivity extends BaseFragment implements NotificationCe
                     if (param != 0) {
                         chatId = param;
                         currentChat = getMessagesController().getChat(param);
-                        getMessagesController().setNoForwardsAdminsBypassEnabled(chatId, isAdminsSavingRestrictionBypassed);
                         getMessagesController().toggleChatNoForwards(chatId, currentChat.noforwards = isSaveRestricted);
                         processDone();
                     }

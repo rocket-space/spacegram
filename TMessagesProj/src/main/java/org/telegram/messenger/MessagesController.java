@@ -6565,43 +6565,13 @@ public class MessagesController extends BaseController implements NotificationCe
         if (chat == null) {
             return false;
         }
-        if (shouldBypassNoForwardsForCurrentUser(chat)) {
-            return false;
-        }
         if (chat.migrated_to != null) {
             TLRPC.Chat migratedTo = getChat(chat.migrated_to.channel_id);
             if (migratedTo != null) {
-                if (shouldBypassNoForwardsForCurrentUser(migratedTo)) {
-                    return false;
-                }
                 return migratedTo.noforwards;
             }
         }
         return chat.noforwards;
-    }
-
-    private boolean shouldBypassNoForwardsForCurrentUser(TLRPC.Chat chat) {
-        if (chat == null || !chat.noforwards) {
-            return false;
-        }
-        if (chat.creator) {
-            return true;
-        }
-        return ChatObject.hasAdminRights(chat) && isNoForwardsAdminsBypassEnabled(chat.id);
-    }
-
-    private String getNoForwardsAdminsBypassKey(long chatId) {
-        return "noforwards_admins_bypass_" + chatId;
-    }
-
-    public boolean isNoForwardsAdminsBypassEnabled(long chatId) {
-        return getMainSettings().getBoolean(getNoForwardsAdminsBypassKey(chatId), false);
-    }
-
-    public void setNoForwardsAdminsBypassEnabled(long chatId, boolean enabled) {
-        SharedPreferences.Editor editor = getMainSettings().edit();
-        editor.putBoolean(getNoForwardsAdminsBypassKey(chatId), enabled);
-        editor.apply();
     }
 
     public boolean isChatNoForwards(long chatId) {

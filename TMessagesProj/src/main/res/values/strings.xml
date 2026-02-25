@@ -10428,5 +10428,4 @@
     <string name="TranslateStyleOnMessage">On Message</string>
     <string name="TranslateStylePopup">Pop-up Dialogue</string>
     <string name="TranslateProviderGoogle">Google Translator</string>
-    <string name="OverrideRestriction">Override restriction</string>
 </resources>
