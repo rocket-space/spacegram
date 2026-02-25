@@ -11800,12 +11800,20 @@ public class ChatActivity extends BaseFragment implements
         contentView.removeView(videoPlayerContainer);
     }
 
+    private boolean canBypassMessageNoForwards(MessageObject messageObject) {
+        if (messageObject == null || messageObject.messageOwner == null || !messageObject.messageOwner.noforwards) {
+            return false;
+        }
+        long sourceDialogId = messageObject.getDialogId();
+        return sourceDialogId < 0 && getMessagesController().canBypassNoForwards(-sourceDialogId);
+    }
+
     private boolean hasSelectedNoforwardsMessage() {
         try {
             for (int i = 0; i < selectedMessagesIds.length; ++i) {
                 for (int j = 0; j < selectedMessagesIds[i].size(); ++j) {
                     MessageObject msg = selectedMessagesIds[i].valueAt(j);
-                    if (msg != null && msg.messageOwner != null && msg.messageOwner.noforwards) {
+                    if (msg != null && msg.messageOwner != null && msg.messageOwner.noforwards && !canBypassMessageNoForwards(msg)) {
                         return true;
                     }
                 }
@@ -18600,7 +18608,8 @@ public class ChatActivity extends BaseFragment implements
                         cantDeleteMessagesCount--;
                     }
                     boolean noforwards = getMessagesController().isChatNoForwards(currentChat);
-                    if (chatMode == MODE_SCHEDULED || !messageObject.canForwardMessage() || noforwards) {
+                    boolean canForwardMessage = messageObject.canForwardMessage() || canBypassMessageNoForwards(messageObject);
+                    if (chatMode == MODE_SCHEDULED || !canForwardMessage || noforwards) {
                         cantForwardMessagesCount--;
                     } else {
                         canForwardMessagesCount--;
@@ -18637,7 +18646,8 @@ public class ChatActivity extends BaseFragment implements
                         cantDeleteMessagesCount++;
                     }
                     boolean noforwards = getMessagesController().isChatNoForwards(currentChat);
-                    if (chatMode == MODE_SCHEDULED || !messageObject.canForwardMessage() || noforwards) {
+                    boolean canForwardMessage = messageObject.canForwardMessage() || canBypassMessageNoForwards(messageObject);
+                    if (chatMode == MODE_SCHEDULED || !canForwardMessage || noforwards) {
                         cantForwardMessagesCount++;
                     } else {
                         canForwardMessagesCount++;
