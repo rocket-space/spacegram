@@ -179,7 +179,6 @@ import org.telegram.messenger.SvgHelper;
 import org.telegram.messenger.Timer;
 import org.telegram.messenger.TranslateController;
 import org.spacegram.SpaceGramConfig;
-import org.spacegram.translator.TranslationHelper;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.Utilities;
@@ -23875,11 +23874,9 @@ public class ChatActivity extends BaseFragment implements
 
 
     private boolean tryTranslateMessageInline(MessageObject messageObject, String toLang) {
-        if (SpaceGramConfig.translateProvider == 0 || SpaceGramConfig.translateStyle != 0 || messageObject == null || messageObject.messageOwner == null || TextUtils.isEmpty(messageObject.messageOwner.message)) {
-            return false;
-        }
-        TranslationHelper.translateMessage(messageObject, toLang, currentAccount, null);
-        return true;
+        // Force the per-message action to use the same translation UI flow as full chat
+        // translation, which correctly handles chat dimming lifecycle.
+        return false;
     }
 
     private long lastTranslationCheck;
