@@ -6587,32 +6587,20 @@ public class MessagesController extends BaseController implements NotificationCe
         if (chat.creator) {
             return true;
         }
-        return ChatObject.hasAdminRights(chat) && isNoForwardsAdminBypassEnabled(chat.id, getUserConfig().getClientUserId());
+        return ChatObject.hasAdminRights(chat) && isNoForwardsAdminsBypassEnabled(chat.id);
     }
 
-    private String getNoForwardsAdminsBypassKey(long chatId, long userId) {
-        return "noforwards_admins_bypass_" + chatId + "_" + userId;
-    }
-
-    public boolean canBypassNoForwards(long chatId) {
-        return shouldBypassNoForwardsForCurrentUser(getChat(chatId));
+    private String getNoForwardsAdminsBypassKey(long chatId) {
+        return "noforwards_admins_bypass_" + chatId;
     }
 
     public boolean isNoForwardsAdminsBypassEnabled(long chatId) {
-        return isNoForwardsAdminBypassEnabled(chatId, getUserConfig().getClientUserId());
+        return getMainSettings().getBoolean(getNoForwardsAdminsBypassKey(chatId), false);
     }
 
     public void setNoForwardsAdminsBypassEnabled(long chatId, boolean enabled) {
-        setNoForwardsAdminBypassEnabled(chatId, getUserConfig().getClientUserId(), enabled);
-    }
-
-    public boolean isNoForwardsAdminBypassEnabled(long chatId, long userId) {
-        return getMainSettings().getBoolean(getNoForwardsAdminsBypassKey(chatId, userId), false);
-    }
-
-    public void setNoForwardsAdminBypassEnabled(long chatId, long userId, boolean enabled) {
         SharedPreferences.Editor editor = getMainSettings().edit();
-        editor.putBoolean(getNoForwardsAdminsBypassKey(chatId, userId), enabled);
+        editor.putBoolean(getNoForwardsAdminsBypassKey(chatId), enabled);
         editor.apply();
     }
 

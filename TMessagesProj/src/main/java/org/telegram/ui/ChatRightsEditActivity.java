@@ -117,8 +117,6 @@ public class ChatRightsEditActivity extends BaseFragment implements Notification
     private String currentBannedRights = "";
     private String currentRank;
     private String initialRank;
-    private boolean savingRestrictionBypass;
-    private boolean initialSavingRestrictionBypass;
 
     private int rowCount;
     private int manageRow;
@@ -135,7 +133,6 @@ public class ChatRightsEditActivity extends BaseFragment implements Notification
     private int addUsersRow;
     private int pinMessagesRow;
     private int manageTopicsRow;
-    private int savingRestrictionBypassRow;
     private int rightsShadowRow;
     private int removeAdminRow;
     private int removeAdminShadowRow;
@@ -215,9 +212,6 @@ public class ChatRightsEditActivity extends BaseFragment implements Notification
         }
         if (myAdminRights == null) {
             myAdminRights = emptyAdminRights(currentType != TYPE_ADD_BOT || (currentChat != null && currentChat.creator));
-        }
-        if (currentChat != null && currentChat.noforwards && (currentType == TYPE_ADMIN || currentType == TYPE_ADD_BOT)) {
-            savingRestrictionBypass = initialSavingRestrictionBypass = MessagesController.getInstance(currentAccount).isNoForwardsAdminBypassEnabled(chatId, userId);
         }
         if (type == TYPE_ADMIN || type == TYPE_ADD_BOT) {
             if (type == TYPE_ADD_BOT) {
@@ -908,8 +902,6 @@ public class ChatRightsEditActivity extends BaseFragment implements Notification
                     } else {
                         value = bannedRights.manage_topics = !bannedRights.manage_topics;
                     }
-                } else if (position == savingRestrictionBypassRow) {
-                    value = savingRestrictionBypass = !savingRestrictionBypass;
                 } else if (position == addUsersRow) {
                     if (currentType == TYPE_ADMIN || currentType == TYPE_ADD_BOT) {
                         value = adminRights.invite_users = !adminRights.invite_users;
@@ -1208,7 +1200,6 @@ public class ChatRightsEditActivity extends BaseFragment implements Notification
         untilDateRow = -1;
         addBotButtonRow = -1;
         manageTopicsRow = -1;
-        savingRestrictionBypassRow = -1;
 
         rowCount = 3;
         permissionsStartRow = rowCount;
@@ -1254,9 +1245,6 @@ public class ChatRightsEditActivity extends BaseFragment implements Notification
                 anonymousRow = rowCount++;
                 if (isForum) {
                     manageTopicsRow = rowCount++;
-                }
-                if (currentChat != null && currentChat.noforwards && currentChat.creator) {
-                    savingRestrictionBypassRow = rowCount++;
                 }
             }
         } else if (currentType == TYPE_BANNED) {
@@ -1377,11 +1365,6 @@ public class ChatRightsEditActivity extends BaseFragment implements Notification
                 adminRights.other = true;
             } else {
                 adminRights.other = false;
-            }
-        }
-        if (currentType == TYPE_ADMIN || currentType == TYPE_ADD_BOT) {
-            if (initialSavingRestrictionBypass != savingRestrictionBypass && currentChat != null && currentChat.noforwards && currentChat.creator) {
-                MessagesController.getInstance(currentAccount).setNoForwardsAdminBypassEnabled(chatId, currentUser.id, savingRestrictionBypass);
             }
         }
         boolean finishFragment = true;
@@ -1634,7 +1617,6 @@ public class ChatRightsEditActivity extends BaseFragment implements Notification
                 if (position == channelEditStoriesRow) return 42;
                 if (position == channelDeleteStoriesRow) return 43;
                 if (position == manageDirectRow) return 44;
-                if (position == savingRestrictionBypassRow) return 45;
                 return 0;
             } else {
                 return super.getItemId(position);
@@ -1644,7 +1626,7 @@ public class ChatRightsEditActivity extends BaseFragment implements Notification
         @Override
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
             int type = holder.getItemViewType();
-            if (currentChat.creator && (currentType == TYPE_ADMIN || currentType == TYPE_ADD_BOT && asAdmin) && type == VIEW_TYPE_SWITCH_CELL && (holder.getAdapterPosition() == anonymousRow || holder.getAdapterPosition() == savingRestrictionBypassRow)) {
+            if (currentChat.creator && (currentType == TYPE_ADMIN || currentType == TYPE_ADD_BOT && asAdmin) && type == VIEW_TYPE_SWITCH_CELL && holder.getAdapterPosition() == anonymousRow) {
                 return true;
             }
             if (!canEdit) {
@@ -1682,8 +1664,6 @@ public class ChatRightsEditActivity extends BaseFragment implements Notification
                         return myAdminRights.pin_messages && (defaultBannedRights == null || defaultBannedRights.pin_messages);
                     } else if (position == manageTopicsRow) {
                         return myAdminRights.manage_topics;
-                    } else if (position == savingRestrictionBypassRow) {
-                        return currentChat != null && currentChat.creator;
                     } else if (position == channelPostStoriesRow) {
                         return myAdminRights.post_stories;
                     } else if (position == channelEditStoriesRow) {
@@ -2013,11 +1993,6 @@ public class ChatRightsEditActivity extends BaseFragment implements Notification
                             checkCell.setTextAndCheck(LocaleController.getString(R.string.ManageTopicsPermission), asAdminValue && adminRights.manage_topics, false);
                             checkCell.setIcon(myAdminRights.manage_topics || isCreator ? 0 : R.drawable.permission_locked);
                         }
-                    } else if (position == savingRestrictionBypassRow) {
-                        checkCell.setTextAndCheck(LocaleController.getString(R.string.OverrideRestriction), savingRestrictionBypass, false);
-                        if (currentType == TYPE_ADD_BOT) {
-                            checkCell.setIcon(currentChat != null && currentChat.creator ? 0 : R.drawable.permission_locked);
-                        }
                     } else if (position == addUsersRow) {
                         if (currentType == TYPE_ADMIN) {
                             if (ChatObject.isActionBannedByDefault(currentChat, ChatObject.ACTION_INVITE)) {
@@ -2124,7 +2099,7 @@ public class ChatRightsEditActivity extends BaseFragment implements Notification
                 return VIEW_TYPE_HEADER_CELL;
             } else if (position == changeInfoRow || position == postMessagesRow || position == manageDirectRow || position == editMesagesRow || position == deleteMessagesRow ||
                     position == addAdminsRow || position == banUsersRow || position == addUsersRow || position == pinMessagesRow ||
-                    position == sendMessagesRow || position == anonymousRow || position == startVoiceChatRow || position == manageRow || position == manageTopicsRow || position == savingRestrictionBypassRow
+                    position == sendMessagesRow || position == anonymousRow || position == startVoiceChatRow || position == manageRow || position == manageTopicsRow
             ) {
                 return VIEW_TYPE_SWITCH_CELL;
             } else if (position == cantEditInfoRow || position == rankInfoRow) {
