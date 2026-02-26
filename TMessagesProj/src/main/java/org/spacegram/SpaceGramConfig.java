@@ -17,6 +17,18 @@ public class SpaceGramConfig {
     public static String translateSkipLang = "";
     public static boolean autoTranslate = false;
 
+    public static boolean contextShowUserId = true;
+    public static boolean contextSaveMediaQuick = true;
+    public static boolean contextCopyMessageLink = true;
+    public static boolean contextPinShortcuts = true;
+    public static boolean contextForwardProToggle = true;
+
+    public static boolean forwardProEnabled = true;
+    public static boolean forwardProMultipleOption = false;
+    public static boolean forwardProConfirmAlert = false;
+    public static boolean forwardProDrawingMulti = false;
+    public static int forwardProRepeatCount = 5;
+
     // 0 = normal, 1 = fast, 2 = extreme
     public static int networkUploadSpeedMode = 0;
     public static int networkDownloadSpeedMode = 0;
@@ -39,6 +51,17 @@ public class SpaceGramConfig {
             translateTargetLang = preferences.getString("translateTargetLang", "");
             translateSkipLang = preferences.getString("translateSkipLang", "");
             autoTranslate = preferences.getBoolean("autoTranslate", false);
+            contextShowUserId = preferences.getBoolean("contextShowUserId", true);
+            contextSaveMediaQuick = preferences.getBoolean("contextSaveMediaQuick", true);
+            contextCopyMessageLink = preferences.getBoolean("contextCopyMessageLink", true);
+            contextPinShortcuts = preferences.getBoolean("contextPinShortcuts", true);
+            contextForwardProToggle = preferences.getBoolean("contextForwardProToggle", true);
+
+            forwardProEnabled = preferences.getBoolean("forwardProEnabled", true);
+            forwardProMultipleOption = preferences.getBoolean("forwardProMultipleOption", false);
+            forwardProConfirmAlert = preferences.getBoolean("forwardProConfirmAlert", false);
+            forwardProDrawingMulti = preferences.getBoolean("forwardProDrawingMulti", false);
+            forwardProRepeatCount = clampRepeatCount(preferences.getInt("forwardProRepeatCount", 5));
 
             networkUploadSpeedMode = clampSpeedMode(preferences.getInt("networkUploadSpeedMode", -1));
             networkDownloadSpeedMode = clampSpeedMode(preferences.getInt("networkDownloadSpeedMode", -1));
@@ -66,6 +89,16 @@ public class SpaceGramConfig {
                 editor.putString("translateTargetLang", translateTargetLang);
                 editor.putString("translateSkipLang", translateSkipLang);
                 editor.putBoolean("autoTranslate", autoTranslate);
+                editor.putBoolean("contextShowUserId", contextShowUserId);
+                editor.putBoolean("contextSaveMediaQuick", contextSaveMediaQuick);
+                editor.putBoolean("contextCopyMessageLink", contextCopyMessageLink);
+                editor.putBoolean("contextPinShortcuts", contextPinShortcuts);
+                editor.putBoolean("contextForwardProToggle", contextForwardProToggle);
+                editor.putBoolean("forwardProEnabled", forwardProEnabled);
+                editor.putBoolean("forwardProMultipleOption", forwardProMultipleOption);
+                editor.putBoolean("forwardProConfirmAlert", forwardProConfirmAlert);
+                editor.putBoolean("forwardProDrawingMulti", forwardProDrawingMulti);
+                editor.putInt("forwardProRepeatCount", clampRepeatCount(forwardProRepeatCount));
                 editor.putInt("networkUploadSpeedMode", networkUploadSpeedMode);
                 editor.putInt("networkDownloadSpeedMode", networkDownloadSpeedMode);
 
@@ -103,5 +136,9 @@ public class SpaceGramConfig {
             return -1;
         }
         return Math.max(0, Math.min(2, mode));
+    }
+
+    public static int clampRepeatCount(int count) {
+        return Math.max(1, Math.min(20, count));
     }
 }

@@ -81,6 +81,9 @@ public class SpaceGramSettingsActivity extends BaseFragment {
             case 6:
                 presentFragment(new SpaceGramExperimentalSettingsActivity());
                 break;
+            case 3:
+                presentFragment(new SpaceGramChatSettingsActivity());
+                break;
             case 10:
                 Browser.openUrl(getParentActivity(), "https://t.me/Rocket_Redireccion");
                 break;
