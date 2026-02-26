@@ -81,6 +81,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.List;
 import java.util.Locale;
 
@@ -452,6 +454,25 @@ public class TranslateAlert2 extends BottomSheet implements NotificationCenter.N
         }
     }
 
+    private static int[] findPlaceholderRange(String text, String placeholder) {
+        if (TextUtils.isEmpty(text) || TextUtils.isEmpty(placeholder)) {
+            return null;
+        }
+
+        int exactIndex = text.indexOf(placeholder);
+        if (exactIndex >= 0) {
+            return new int[] {exactIndex, exactIndex + placeholder.length()};
+        }
+
+        String escaped = Pattern.quote(placeholder).replace("_", "\\\\s*_\\\\s*");
+        Matcher matcher = Pattern.compile(escaped).matcher(text);
+        if (matcher.find()) {
+            return new int[] {matcher.start(), matcher.end()};
+        }
+
+        return null;
+    }
+
     private static boolean isLinkEntity(TLRPC.MessageEntity entity) {
         return entity instanceof TLRPC.TL_messageEntityTextUrl ||
             entity instanceof TLRPC.TL_messageEntityUrl ||
@@ -510,7 +531,7 @@ public class TranslateAlert2 extends BottomSheet implements NotificationCenter.N
                     continue;
                 }
                 String visible = originalText.substring(entity.offset, entity.offset + entity.length);
-                String token = " __SG_LINK_" + placeholders.size() + "__ ";
+                String token = "__SG_LINK_" + placeholders.size() + "__";
                 placeholders.add(new PlaceholderLink(token, visible, entity));
                 maskedText = maskedText.substring(0, entity.offset) + token + maskedText.substring(entity.offset + entity.length);
             }
@@ -527,11 +548,12 @@ public class TranslateAlert2 extends BottomSheet implements NotificationCenter.N
             result.entities = new ArrayList<>();
             for (int i = 0; i < placeholders.size(); ++i) {
                 PlaceholderLink link = placeholders.get(i);
-                int index = result.text.indexOf(link.placeholder);
-                if (index < 0) {
+                int[] range = findPlaceholderRange(result.text, link.placeholder);
+                if (range == null) {
                     continue;
                 }
-                result.text = result.text.substring(0, index) + link.visibleText + result.text.substring(index + link.placeholder.length());
+                int index = range[0];
+                result.text = result.text.substring(0, range[0]) + link.visibleText + result.text.substring(range[1]);
                 TLRPC.MessageEntity linkEntity = cloneLinkEntity(link.source, index, link.visibleText.length());
                 if (linkEntity != null) {
                     result.entities.add(linkEntity);
