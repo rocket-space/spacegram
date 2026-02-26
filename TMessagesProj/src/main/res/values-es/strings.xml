@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="AppName">SpaceGram</string>
+    <string name="AppName">SpaceGram🚀</string>
     <string name="AppNameBeta">SpaceGram beta</string>
     <string name="LanguageName">Español</string>
     <string name="English">Inglés</string>
@@ -1316,4 +1316,23 @@
     <string name="RemindDayYearAt">\'Recordar el\' d \'de\' MMM \'de\' yyyy \'a las\' HH:mm</string>
     <string name="BotsMenuTitle">Menu</string>
     <string name="Understood">👍 Entendido</string>
+
+    <string name="SettingsSpaceGramChatContextualMenu">Menú contextual</string>
+    <string name="SettingsSpaceGramChatContextualMenuInfo">Elige qué opciones aparecen en el menú contextual del chat.</string>
+    <string name="SettingsSpaceGramChatForwardPro">Reenvío Pro</string>
+    <string name="SettingsSpaceGramChatForwardProInfo">Herramientas avanzadas de reenvío del lado cliente.</string>
+    <string name="SettingsSpaceGramChatForwardProEnabled">Activar Reenvío Pro</string>
+    <string name="SettingsSpaceGramChatForwardMultiple">Opción de reenvío múltiple</string>
+    <string name="SettingsSpaceGramChatForwardConfirmAlert">Mostrar alerta de confirmación</string>
+    <string name="SettingsSpaceGramChatForwardDrawingMulti">Envío múltiple de dibujo</string>
+    <string name="SettingsSpaceGramChatForwardRepeatCount">Contar múltiples mensajes enviados</string>
+    <string name="SettingsSpaceGramContextShowId">Mostrar ID de usuario</string>
+    <string name="SettingsSpaceGramContextSaveMedia">Guardar medios rápido</string>
+    <string name="SettingsSpaceGramContextCopyMessageLink">Copiar enlace del mensaje</string>
+    <string name="SettingsSpaceGramContextPinShortcuts">Accesos directos de fijado</string>
+    <string name="SettingsSpaceGramContextForwardProToggle">Interruptor de Reenvío Pro</string>
+    <string name="SettingsSpaceGramContextMenuDialogTitle">Opciones del menú contextual</string>
+    <string name="SettingsSpaceGramForwardRepeatCountTitle">Cantidad de reenvíos repetidos</string>
+    <string name="SettingsSpaceGramClientSideNote">Nota: estas opciones son del lado cliente y no pueden saltar restricciones del servidor de Telegram.</string>
+
 </resources>

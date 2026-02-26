@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="AppName">SpaceGram</string>
+    <string name="AppName">SpaceGram🚀</string>
     <string name="AppNameBeta">SpaceGram beta</string>
     <string name="LanguageName">English</string>
     <string name="English">English</string>
@@ -10428,4 +10428,23 @@
     <string name="TranslateStyleOnMessage">On Message</string>
     <string name="TranslateStylePopup">Pop-up Dialogue</string>
     <string name="TranslateProviderGoogle">Google Translator</string>
+
+    <string name="SettingsSpaceGramChatContextualMenu">Contextual Menu</string>
+    <string name="SettingsSpaceGramChatContextualMenuInfo">Choose what appears in the chat contextual menu.</string>
+    <string name="SettingsSpaceGramChatForwardPro">Pro Forwarding</string>
+    <string name="SettingsSpaceGramChatForwardProInfo">Advanced client-side forwarding tools.</string>
+    <string name="SettingsSpaceGramChatForwardProEnabled">Enable Pro Forwarding</string>
+    <string name="SettingsSpaceGramChatForwardMultiple">Multiple forwarding option</string>
+    <string name="SettingsSpaceGramChatForwardConfirmAlert">Show confirmation alert</string>
+    <string name="SettingsSpaceGramChatForwardDrawingMulti">Multi-send for drawings</string>
+    <string name="SettingsSpaceGramChatForwardRepeatCount">Repeat sent message count</string>
+    <string name="SettingsSpaceGramContextShowId">Show User ID</string>
+    <string name="SettingsSpaceGramContextSaveMedia">Save media quickly</string>
+    <string name="SettingsSpaceGramContextCopyMessageLink">Copy message link</string>
+    <string name="SettingsSpaceGramContextPinShortcuts">Pin shortcuts</string>
+    <string name="SettingsSpaceGramContextForwardProToggle">Pro Forwarding toggle</string>
+    <string name="SettingsSpaceGramContextMenuDialogTitle">Contextual Menu Options</string>
+    <string name="SettingsSpaceGramForwardRepeatCountTitle">Repeat forward count</string>
+    <string name="SettingsSpaceGramClientSideNote">Note: these options are client-side only and cannot bypass Telegram server restrictions.</string>
+
 </resources>

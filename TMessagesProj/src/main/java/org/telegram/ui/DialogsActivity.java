@@ -94,6 +94,8 @@ import androidx.recyclerview.widget.LinearSmoothScrollerCustom;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
+import org.spacegram.SpaceGramConfig;
+
 import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.AnimationNotificationsLocker;
@@ -5039,7 +5041,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 for (int i = 0; i < selectedDialogs.size(); i++) {
                     topicKeys.add(MessagesStorage.TopicKey.of(selectedDialogs.get(i), 0));
                 }
-                delegate.didSelectDialogs(DialogsActivity.this, topicKeys, commentView.getFieldText(), false, notify, scheduleDate, scheduleRepeatPeriod, null);
+                sendSelectedDialogsWithProForward(topicKeys, commentView.getFieldText(), notify, scheduleDate, scheduleRepeatPeriod);
             });
             writeButton.setOnLongClickListener(v -> {
                 if (isNextButton) {
@@ -11347,7 +11349,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             for (int i = 0; i < selectedDialogs.size(); i++) {
                 topicKeys.add(MessagesStorage.TopicKey.of(selectedDialogs.get(i), 0));
             }
-            delegate.didSelectDialogs(DialogsActivity.this, topicKeys, commentView.getFieldText(), false, notify, scheduleDate, scheduleRepeatPeriod, null);
+            sendSelectedDialogsWithProForward(topicKeys, commentView.getFieldText(), notify, scheduleDate, scheduleRepeatPeriod);
         });
 
         boolean onlyMyself = false;
@@ -11386,7 +11388,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         for (int i = 0; i < selectedDialogs.size(); i++) {
                             topicKeys.add(MessagesStorage.TopicKey.of(selectedDialogs.get(i), 0));
                         }
-                        delegate.didSelectDialogs(DialogsActivity.this, topicKeys, commentView.getFieldText(), false, notify, scheduleDate, scheduleRepeatPeriod, null);
+                        sendSelectedDialogsWithProForward(topicKeys, commentView.getFieldText(), notify, scheduleDate, scheduleRepeatPeriod);
                     }
                 }, resourcesProvider);
             });
@@ -11416,6 +11418,33 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         } catch (Exception ignored) {}
 
         return false;
+    }
+
+    private void sendSelectedDialogsWithProForward(ArrayList<MessagesStorage.TopicKey> topicKeys, CharSequence message, boolean notify, int scheduleDate, int scheduleRepeatPeriod) {
+        if (delegate == null || topicKeys == null || topicKeys.isEmpty()) {
+            return;
+        }
+
+        Runnable sendAction = () -> {
+            int repeat = 1;
+            if (SpaceGramConfig.forwardProEnabled && SpaceGramConfig.forwardProMultipleOption) {
+                repeat = SpaceGramConfig.clampRepeatCount(SpaceGramConfig.forwardProRepeatCount);
+            }
+            for (int i = 0; i < repeat; i++) {
+                delegate.didSelectDialogs(DialogsActivity.this, topicKeys, message, false, notify, scheduleDate, scheduleRepeatPeriod, null);
+            }
+        };
+
+        if (SpaceGramConfig.forwardProEnabled && SpaceGramConfig.forwardProConfirmAlert && getParentActivity() != null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+            builder.setTitle(getString(R.string.SettingsSpaceGramChatForwardPro));
+            builder.setMessage(getString(R.string.SettingsSpaceGramClientSideNote));
+            builder.setPositiveButton(getString(R.string.OK), (dialog, which) -> sendAction.run());
+            builder.setNegativeButton(getString(R.string.Cancel), null);
+            showDialog(builder.create());
+        } else {
+            sendAction.run();
+        }
     }
 
     private float getRightSlidingProgress() {
